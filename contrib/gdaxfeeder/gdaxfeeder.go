@@ -22,6 +22,8 @@ func (a ByTime) Len() int           { return len(a) }
 func (a ByTime) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a ByTime) Less(i, j int) bool { return a[i].Time.Before(a[j].Time) }
 
+const exchange string = "gdax-"
+
 // FetchConfig is the configuration for GdaxFetcher you can define in
 // marketstore's config file through bgworker extension.
 type FetcherConfig struct {
@@ -50,10 +52,27 @@ func recast(config map[string]interface{}) *FetcherConfig {
 	return &ret
 }
 
+func GetAllSymbols() []string {
+	client := gdax.NewClient("", "", "")
+	products, err := client.GetProducts()
+	symbols := make([]string, 0)
+
+	if err != nil {
+		symbols := []string{"BCH-BTC", "BCH-USD", "BTC-EUR", "BTC-GBP", "BTC-USD", "ETH-BTC",
+			"ETH-EUR", "ETH-USD", "LTC-BTC", "LTC-EUR", "LTC-USD", "BCH-EUR"}
+		return symbols
+	} else {
+		for _, symbol := range products {
+			symbols = append(symbols, symbol.Id)
+		}
+	}
+	return symbols
+}
+
 // NewBgWorker returns the new instance of GdaxFetcher.  See FetcherConfig
 // for the details of available configurations.
 func NewBgWorker(conf map[string]interface{}) (bgworker.BgWorker, error) {
-	symbols := []string{"BTC", "ETH", "LTC", "BCH"}
+	symbols := GetAllSymbols()
 
 	config := recast(conf)
 	if len(config.Symbols) > 0 {
@@ -118,8 +137,8 @@ func (gd *GdaxFetcher) Run() {
 	client := gdax.NewClient("", "", "")
 	timeStart := time.Time{}
 	for _, symbol := range symbols {
-		tbk := io.NewTimeBucketKey(symbol + "/" + gd.baseTimeframe.String + "/OHLCV")
-		lastTimestamp := findLastTimestamp(symbol, tbk)
+		tbk := io.NewTimeBucketKey(exchange + symbol + "/" + gd.baseTimeframe.String + "/OHLCV")
+		lastTimestamp := findLastTimestamp(exchange + symbol, tbk)
 		glog.Infof("lastTimestamp for %s = %v", symbol, lastTimestamp)
 		if timeStart.IsZero() || (!lastTimestamp.IsZero() && lastTimestamp.Before(timeStart)) {
 			timeStart = lastTimestamp
@@ -142,7 +161,7 @@ func (gd *GdaxFetcher) Run() {
 				Granularity: int(gd.baseTimeframe.Duration.Seconds()),
 			}
 			glog.Infof("Requesting %s %v - %v", symbol, timeStart, timeEnd)
-			rates, err := client.GetHistoricRates(symbol+"-USD", params)
+			rates, err := client.GetHistoricRates(symbol, params)
 			if err != nil {
 				glog.Errorf("Response error: %v", err)
 				// including rate limit case
@@ -181,7 +200,7 @@ func (gd *GdaxFetcher) Run() {
 			glog.Infof("%s: %d rates between %v - %v", symbol, len(rates),
 				rates[0].Time, rates[(len(rates))-1].Time)
 			csm := io.NewColumnSeriesMap()
-			tbk := io.NewTimeBucketKey(symbol + "/" + gd.baseTimeframe.String + "/OHLCV")
+			tbk := io.NewTimeBucketKey(exchange + symbol + "/" + gd.baseTimeframe.String + "/OHLCV")
 			csm.AddColumnSeries(*tbk, cs)
 			executor.WriteCSM(csm, false)
 		}
@@ -205,6 +224,11 @@ func (gd *GdaxFetcher) Run() {
 func main() {
 
 	client := gdax.NewClient("", "", "")
+
+	var symbols []string
+
+	symbols = GetAllSymbols()
+	fmt.Println("Symbols :", symbols)
 	params := gdax.GetHistoricRatesParams{
 		Start:       time.Date(2017, 12, 1, 0, 0, 0, 0, time.UTC),
 		End:         time.Date(2017, 12, 1, 1, 0, 0, 0, time.UTC),

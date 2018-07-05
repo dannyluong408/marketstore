@@ -25,6 +25,8 @@ var suffixBinanceDefs = map[string]string{
 	"W":   "w",
 }
 
+const exchange string = "binance-"
+
 //For ConvertStringToFloat function and Run() function to making exiting easier
 var errorsConversion []error
 
@@ -208,8 +210,8 @@ func (bn *BinanceFetcher) Run() {
 	timeInterval := timeIntervalNumsOnly + correctIntervalSymbol
 
 	for _, symbol := range symbols {
-		tbk := io.NewTimeBucketKey(symbol + "/" + bn.baseTimeframe.String + "/OHLCV")
-		lastTimestamp := findLastTimestamp(symbol, tbk)
+		tbk := io.NewTimeBucketKey(exchange + symbol + "/" + bn.baseTimeframe.String + "/OHLCV")
+		lastTimestamp := findLastTimestamp(exchange + symbol, tbk)
 		glog.Infof("lastTimestamp for %s = %v", symbol, lastTimestamp)
 		if timeStart.IsZero() || (!lastTimestamp.IsZero() && lastTimestamp.Before(timeStart)) {
 			timeStart = lastTimestamp
@@ -235,9 +237,8 @@ func (bn *BinanceFetcher) Run() {
 		if diffTimes < 0{
 			timeStart = timeStart.Add(-bn.baseTimeframe.Duration * 300)
 			timeEnd = finalTime
-		} 
+		}
 
-		
 		if diffTimes == 0 {
 			glog.Infof("Got all data from: %v to %v", bn.queryStart, bn.queryEnd)
 			glog.Infof("Continuing...")
@@ -252,7 +253,7 @@ func (bn *BinanceFetcher) Run() {
 		for _, symbol := range symbols {
 			glog.Infof("Requesting %s %v - %v", symbol, timeStart, timeEnd)
 
-			rates, err := client.NewKlinesService().Symbol(symbol + "USDT").Interval(timeInterval).StartTime(timeStartM).EndTime(timeEndM).Do(context.Background())
+			rates, err := client.NewKlinesService().Symbol(symbol).Interval(timeInterval).StartTime(timeStartM).EndTime(timeEndM).Do(context.Background())
 
 			if err != nil {
 				glog.Errorf("Response error: %v", err)
@@ -294,10 +295,10 @@ func (bn *BinanceFetcher) Run() {
 			cs.AddColumn("Low", low)
 			cs.AddColumn("Close", close)
 			cs.AddColumn("Volume", volume)
-			// glog.Infof("%s: %d rates between %v - %v", symbol, len(rates),
-			// 	timeStart.String(), timeEnd.String())
+			glog.Infof("%s: %d rates between %v - %v", symbol, len(rates),
+				timeStart.String(), timeEnd.String())
 			csm := io.NewColumnSeriesMap()
-			tbk := io.NewTimeBucketKey(symbol + "/" + bn.baseTimeframe.String + "/OHLCV")
+			tbk := io.NewTimeBucketKey(exchange + symbol + "/" + bn.baseTimeframe.String + "/OHLCV")
 			csm.AddColumnSeries(*tbk, cs)
 			executor.WriteCSM(csm, false)
 		}
