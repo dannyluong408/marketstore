@@ -28,3 +28,9 @@ bgworkers:
     config:           
       base_timeframe: "1Min"
       query_start: "2017-07-03 00:00"
+  - module: bitfinexfeeder.so
+    name: BitfinexFetcher
+    config:           
+      base_timeframe: "1Min"
+      query_start: "2017-07-03 00:00"
+ 
