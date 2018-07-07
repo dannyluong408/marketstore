@@ -27,7 +27,7 @@ func (t *TestSuite) TestNew(c *C) {
 	var ret bgworker.BgWorker
 	var err error
 	ret, err = NewBgWorker(config)
-	worker = ret.(*GdaxFetcher)
+	worker = ret.(*BitfinexFetcher)
 	c.Assert(len(worker.symbols), Equals, 1)
 	c.Assert(worker.symbols[0], Equals, "BTCUSD")
 	c.Assert(err, IsNil)
