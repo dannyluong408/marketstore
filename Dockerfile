@@ -8,8 +8,8 @@ RUN apk update
 RUN apk --no-cache add git make tar bash curl alpine-sdk su-exec
 #RUN  go get -u github.com/golang/dep/... && mv /go/bin/dep /usr/local/bin/dep
 RUN curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh && mv /go/bin/dep /usr/local/bin/dep
-ADD . /go/src/github.com/alpacahq/marketstore
-WORKDIR /go/src/github.com/alpacahq/marketstore
+ADD . /go/src/github.com/dannyluong408/marketstore
+WORKDIR /go/src/github.com/dannyluong408/marketstore
 
 RUN make configure all plugins
 
