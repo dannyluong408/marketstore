@@ -250,6 +250,7 @@ func (gd *BitfinexFetcher) Run() {
 				ConvertMillToTime(rates[0].MTS), ConvertMillToTime(rates[(len(rates))-1].MTS))
 			csm := io.NewColumnSeriesMap()
 			tbk := io.NewTimeBucketKey(exchange + bitfinex.TradingPrefix + symbol + "/" + gd.baseTimeframe.String + "/OHLCV")
+			glog.Infof("Added %v", cs)
 			csm.AddColumnSeries(*tbk, cs)
 			executor.WriteCSM(csm, false)
 		}
