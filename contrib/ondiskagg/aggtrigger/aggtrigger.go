@@ -146,7 +146,9 @@ func (s *OnDiskAggTrigger) Fire(keyPath string, records []trigger.Record) {
 	// check if we have a valid cache, if not, re-query
 	if v, ok := s.aggCache.Load(tbk.String()); ok {
 		c := v.(*cachedAgg)
-
+		glog.Infof("Comparing Tail: %v", tail)
+		glog.Infof("To Head: %v", head)
+		
 		if !c.Valid(tail, head) {
 			s.aggCache.Delete(tbk.String())
 
