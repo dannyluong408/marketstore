@@ -42,7 +42,7 @@ const exchange string = "bitfinex-"
 
 //Convert time from milliseconds to Unix
 func ConvertMillToTime(originalTime int64) time.Time {
-	i := time.Unix(originalTime*int64(time.Millisecond), 0 )
+	i := time.Unix(originalTime, 0 )
 	return i
 }
 // FetchConfig is the configuration for bitfinexFetcher you can define in
@@ -155,12 +155,12 @@ func findLastTimestamp(symbol string, tbk *io.TimeBucketKey) time.Time {
 // Run() runs forever to get public historical rate for each configured symbol,
 // and writes in marketstore data format.  In case any error including rate limit
 // is returned from Bitfinex, it waits for a minute.
-func (gd *BitfinexFetcher) Run() {
-	symbols := gd.symbols
+func (bf *BitfinexFetcher) Run() {
+	symbols := bf.symbols
 	client := rest.NewClientWithURL(*api)
 	timeStart := time.Time{}
 
-	originalInterval := gd.baseTimeframe.String
+	originalInterval := bf.baseTimeframe.String
 	re := regexp.MustCompile("[0-9]+")
 	re2 := regexp.MustCompile("[a-zA-Z]+")
 
@@ -178,7 +178,7 @@ func (gd *BitfinexFetcher) Run() {
 	timeInterval := timeIntervalNumsOnly + correctIntervalSymbol
 
 	for _, symbol := range symbols {
-		tbk := io.NewTimeBucketKey(exchange + bitfinex.TradingPrefix + symbol + "/" + gd.baseTimeframe.String + "/OHLCV")
+		tbk := io.NewTimeBucketKey(exchange + bitfinex.TradingPrefix + symbol + "/" + bf.baseTimeframe.String + "/OHLCV")
 		lastTimestamp := findLastTimestamp(exchange + bitfinex.TradingPrefix + symbol, tbk)
 		glog.Infof("lastTimestamp for %s = %v", bitfinex.TradingPrefix + symbol, lastTimestamp)
 		if timeStart.IsZero() || (!lastTimestamp.IsZero() && lastTimestamp.Before(timeStart)) {
@@ -186,29 +186,23 @@ func (gd *BitfinexFetcher) Run() {
 		}
 	}
 	if timeStart.IsZero() {
-		if !gd.queryStart.IsZero() {
-			timeStart = gd.queryStart
+		if !bf.queryStart.IsZero() {
+			timeStart = bf.queryStart
 		} else {
 			timeStart = time.Now().UTC().Add(-time.Hour)
 		}
 	}
 	for {
-		timeEnd := timeStart.Add(gd.baseTimeframe.Duration * 300)
+		timeEnd := timeStart.Add(bf.baseTimeframe.Duration * 300)
+
 		lastTime := timeStart
-
-
-		var timeStartM int64
-		var timeEndM int64
-
-		timeStartM = timeStart.UnixNano() / (int64(time.Millisecond) / int64(time.Nanosecond))
-		timeEndM = timeEnd.UnixNano() / (int64(time.Millisecond) / int64(time.Nanosecond))
 
 		for _, symbol := range symbols {
 
-			//Granularity: int(gd.baseTimeframe.Duration.Seconds()),
+			//Granularity: int(bf.baseTimeframe.Duration.Seconds()),
 
 			glog.Infof("Requesting %s %v - %v", bitfinex.TradingPrefix + symbol, timeStart, timeEnd)
-			rates, err := client.Candles.GetOHLCV(timeInterval, bitfinex.TradingPrefix + symbol, timeStartM, timeEndM)
+			rates, err := client.Candles.GetOHLCV(timeInterval, bitfinex.TradingPrefix + symbol, timeStart.Unix(), timeEnd.Unix())
 			if err != nil {
 				glog.Errorf("Response error: %v", err)
 				// including rate limit case
@@ -249,15 +243,15 @@ func (gd *BitfinexFetcher) Run() {
 			glog.Infof("%s: %d rates between %v - %v", bitfinex.TradingPrefix + symbol, len(rates),
 				ConvertMillToTime(rates[0].MTS), ConvertMillToTime(rates[(len(rates))-1].MTS))
 			csm := io.NewColumnSeriesMap()
-			tbk := io.NewTimeBucketKey(exchange + bitfinex.TradingPrefix + symbol + "/" + gd.baseTimeframe.String + "/OHLCV")
-			glog.Infof("Added %v", cs)
+			tbk := io.NewTimeBucketKey(exchange + bitfinex.TradingPrefix + symbol + "/" + bf.baseTimeframe.String + "/OHLCV")
+
 			csm.AddColumnSeries(*tbk, cs)
 			executor.WriteCSM(csm, false)
 		}
 		// next fetch start point
-		timeStart = lastTime.Add(gd.baseTimeframe.Duration)
+		timeStart = lastTime.Add(bf.baseTimeframe.Duration)
 		// for the next bar to complete, add it once more
-		nextExpected := timeStart.Add(gd.baseTimeframe.Duration)
+		nextExpected := timeStart.Add(bf.baseTimeframe.Duration)
 		now := time.Now()
 		toSleep := nextExpected.Sub(now)
 		glog.Infof("next expected(%v) - now(%v) = %v", nextExpected, now, toSleep)

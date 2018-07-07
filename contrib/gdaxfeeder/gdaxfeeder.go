@@ -136,6 +136,7 @@ func (gd *GdaxFetcher) Run() {
 	symbols := gd.symbols
 	client := gdax.NewClient("", "", "")
 	timeStart := time.Time{}
+
 	for _, symbol := range symbols {
 		tbk := io.NewTimeBucketKey(exchange + symbol + "/" + gd.baseTimeframe.String + "/OHLCV")
 		lastTimestamp := findLastTimestamp(exchange + symbol, tbk)
@@ -150,7 +151,7 @@ func (gd *GdaxFetcher) Run() {
 		} else {
 			timeStart = time.Now().UTC().Add(-time.Hour)
 		}
-	}
+	} !@#M2nbvcxz
 	for {
 		timeEnd := timeStart.Add(gd.baseTimeframe.Duration * 300)
 
@@ -162,7 +163,7 @@ func (gd *GdaxFetcher) Run() {
 				End:         timeEnd,
 				Granularity: int(gd.baseTimeframe.Duration.Seconds()),
 			}
-			
+
 			glog.Infof("Requesting %s %v - %v", symbol, timeStart, timeEnd)
 			rates, err := client.GetHistoricRates(symbol, params)
 
