@@ -42,7 +42,7 @@ const exchange string = "bitfinex-"
 
 //Convert time from milliseconds to Unix
 func ConvertMillToTime(originalTime int64) time.Time {
-	i := time.Unix(originalTime, 0 )
+	i := time.Unix(0, originalTime*int64(time.Millisecond))
 	return i
 }
 
@@ -198,12 +198,18 @@ func (bf *BitfinexFetcher) Run() {
 
 		lastTime := timeStart
 
+		var timeStartM int64
+		var timeEndM int64
+
+		timeStartM = timeStart.UnixNano() / (int64(time.Millisecond) / int64(time.Nanosecond))
+		timeEndM = timeEnd.UnixNano() / (int64(time.Millisecond) / int64(time.Nanosecond))
+
 		for _, symbol := range symbols {
 
 			//Granularity: int(bf.baseTimeframe.Duration.Seconds()),
 
 			glog.Infof("Requesting %s %v - %v", bitfinex.TradingPrefix + symbol, timeStart, timeEnd)
-			rates, err := client.Candles.GetOHLCV(timeInterval, bitfinex.TradingPrefix + symbol, timeStart.Unix(), timeEnd.Unix())
+			rates, err := client.Candles.GetOHLCV(timeInterval, bitfinex.TradingPrefix + symbol, timeStartM, timeEndM)
 			if err != nil {
 				glog.Errorf("Response error: %v", err)
 				// including rate limit case

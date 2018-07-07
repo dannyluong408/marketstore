@@ -85,7 +85,7 @@ func QueryTime(query string) time.Time {
 
 //Convert time from milliseconds to Unix
 func ConvertMillToTime(originalTime int64) time.Time {
-	i := time.Unix(originalTime, 0 )
+	i := time.Unix(0, originalTime*int64(time.Millisecond))
 	return i
 }
 
@@ -232,10 +232,16 @@ func (bn *BinanceFetcher) Run() {
 
 		lastTime := timeStart
 
+		var timeStartM int64
+		var timeEndM int64
+
+		timeStartM = timeStart.UnixNano() / (int64(time.Millisecond) / int64(time.Nanosecond))
+		timeEndM = timeEnd.UnixNano() / (int64(time.Millisecond) / int64(time.Nanosecond))
+
 		for _, symbol := range symbols {
 			glog.Infof("Requesting %s %v - %v", symbol, timeStart, timeEnd)
 
-			rates, err := client.NewKlinesService().Symbol(symbol).Interval(timeInterval).StartTime(timeStart.Unix()).EndTime(timeEnd.Unix()).Do(context.Background())
+			rates, err := client.NewKlinesService().Symbol(symbol).Interval(timeInterval).StartTime(timeStartM).EndTime(timeEndM).Do(context.Background())
 
 			if err != nil {
 				glog.Errorf("Response error: %v", err)
