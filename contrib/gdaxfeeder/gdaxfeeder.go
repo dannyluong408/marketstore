@@ -151,7 +151,7 @@ func (gd *GdaxFetcher) Run() {
 		} else {
 			timeStart = time.Now().UTC().Add(-time.Hour)
 		}
-	} !@#M2nbvcxz
+	}
 	for {
 		timeEnd := timeStart.Add(gd.baseTimeframe.Duration * 300)
 
