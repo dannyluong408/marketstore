@@ -262,7 +262,7 @@ func (bn *BinanceFetcher) Run() {
 
 			for _, rate := range rates {
 				if ConvertMillToTime(rate.OpenTime).After(lastTime) {
-					lastTime = rate.OpenTime
+					lastTime = ConvertMillToTime(rate.OpenTime)
 				}
 				errorsConversion = errorsConversion[:0]
 				openTime = append(openTime, ConvertMillToTime(rate.OpenTime).Unix())
@@ -295,9 +295,9 @@ func (bn *BinanceFetcher) Run() {
 		}
 
 		// next fetch start point
-		timeStart = lastTime.Add(cs.baseTimeframe.Duration)
+		timeStart = lastTime.Add(bn.baseTimeframe.Duration)
 		// for the next bar to complete, add it once more
-		nextExpected := timeStart.Add(cs.baseTimeframe.Duration)
+		nextExpected := timeStart.Add(bn.baseTimeframe.Duration)
 		now := time.Now()
 		toSleep := nextExpected.Sub(now)
 		glog.Infof("next expected(%v) - now(%v) = %v", nextExpected, now, toSleep)
