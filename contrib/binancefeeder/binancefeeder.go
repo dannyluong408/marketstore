@@ -265,7 +265,7 @@ func (bn *BinanceFetcher) Run() {
 					lastTime = ConvertMillToTime(rate.OpenTime)
 				}
 				errorsConversion = errorsConversion[:0]
-				openTime = append(openTime, rate.OpenTime)
+				openTime = append(openTime, ConvertMillToTime(rate.OpenTime).Unix())
 				open = append(open, ConvertStringToFloat(rate.Open))
 				high = append(high, ConvertStringToFloat(rate.High))
 				low = append(low, ConvertStringToFloat(rate.Low))
