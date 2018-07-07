@@ -42,7 +42,7 @@ const exchange string = "bitfinex-"
 
 //Convert time from milliseconds to Unix
 func ConvertMillToTime(originalTime int64) time.Time {
-	i := time.Unix(0, originalTime*int64(time.Millisecond))
+	i := time.Unix(originalTime*int64(time.Millisecond), 0 )
 	return i
 }
 // FetchConfig is the configuration for bitfinexFetcher you can define in
