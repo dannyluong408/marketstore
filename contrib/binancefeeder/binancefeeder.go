@@ -222,8 +222,6 @@ func (bn *BinanceFetcher) Run() {
 		} else {
 			timeStart = time.Now().UTC().Add(-time.Hour)
 		}
-	} else {
-		timeStart = timeStart.Add(bn.baseTimeframe.Duration * 300)
 	}
 	for {
 		timeEnd := timeStart.Add(bn.baseTimeframe.Duration * 300)
