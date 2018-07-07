@@ -293,7 +293,7 @@ func (bn *BinanceFetcher) Run() {
 			csm.AddColumnSeries(*tbk, cs)
 			executor.WriteCSM(csm, false)
 		}
-		
+
 		// next fetch start point
 		timeStart = lastTime.Add(gd.baseTimeframe.Duration)
 		// for the next bar to complete, add it once more
