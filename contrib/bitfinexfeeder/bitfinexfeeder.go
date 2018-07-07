@@ -207,6 +207,7 @@ func (bf *BitfinexFetcher) Run() {
 		for _, symbol := range symbols {
 			glog.Infof("Start: %v, End: %v", timeStart.Unix(), timeEnd.Unix())
 			glog.Infof("Requesting %s %v - %v", bitfinex.TradingPrefix + symbol, timeStart, timeEnd)
+			glog.Infof("Requesting in MS %s %v - %v", bitfinex.TradingPrefix + symbol, timeStartM, timeEndM)
 			rates, err := client.Candles.GetOHLCV(timeInterval, bitfinex.TradingPrefix + symbol, timeStartM, timeEndM)
 			if err != nil {
 				glog.Errorf("Response error: %v", err)
@@ -228,7 +229,6 @@ func (bf *BitfinexFetcher) Run() {
 			sort.Sort(ByTime(rates))
 
 			for _, rate := range rates {
-				glog.Info("MTS %v", ConvertMillToTime(rate.MTS))
 				if ConvertMillToTime(rate.MTS).After(lastTime) {
 					lastTime = ConvertMillToTime(rate.MTS)
 				}
