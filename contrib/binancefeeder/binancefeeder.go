@@ -261,8 +261,8 @@ func (bn *BinanceFetcher) Run() {
 			volume := make([]float64, 0)
 
 			for _, rate := range rates {
-				if rate.OpenTime.After(lastTime) {
-					lastTime = rate.Time
+				if ConvertMillToTime(rate.OpenTime).After(lastTime) {
+					lastTime = rate.OpenTime
 				}
 				errorsConversion = errorsConversion[:0]
 				openTime = append(openTime, ConvertMillToTime(rate.OpenTime).Unix())
@@ -295,9 +295,9 @@ func (bn *BinanceFetcher) Run() {
 		}
 
 		// next fetch start point
-		timeStart = lastTime.Add(gd.baseTimeframe.Duration)
+		timeStart = lastTime.Add(cs.baseTimeframe.Duration)
 		// for the next bar to complete, add it once more
-		nextExpected := timeStart.Add(gd.baseTimeframe.Duration)
+		nextExpected := timeStart.Add(cs.baseTimeframe.Duration)
 		now := time.Now()
 		toSleep := nextExpected.Sub(now)
 		glog.Infof("next expected(%v) - now(%v) = %v", nextExpected, now, toSleep)
