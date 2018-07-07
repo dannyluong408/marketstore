@@ -216,20 +216,19 @@ func (bn *BinanceFetcher) Run() {
 			timeStart = lastTimestamp
 		}
 	}
-
-	for {
-		if timeStart.IsZero() {
-			if !bn.queryStart.IsZero() {
-				timeStart = bn.queryStart
-			} else {
-				timeStart = time.Now().UTC().Add(-time.Hour)
-			}
+	if timeStart.IsZero() {
+		if !bn.queryStart.IsZero() {
+			timeStart = bn.queryStart
 		} else {
-			timeStart = timeStart.Add(bn.baseTimeframe.Duration * 300)
+			timeStart = time.Now().UTC().Add(-time.Hour)
 		}
-
+	} else {
+		timeStart = timeStart.Add(bn.baseTimeframe.Duration * 300)
+	}
+	for {
 		timeEnd := timeStart.Add(bn.baseTimeframe.Duration * 300)
 
+		lastTime := timeStart
 		// diffTimes := finalTime.Sub(timeEnd)
 		//
 		// //Reset time. Make sure you get all data possible
@@ -243,7 +242,6 @@ func (bn *BinanceFetcher) Run() {
 		// 	glog.Infof("Got all data from: %v to %v", bn.queryStart, bn.queryEnd)
 		// 	glog.Infof("Continuing...")
 		// }
-		lastTime := timeStart
 
 		var timeStartM int64
 		var timeEndM int64
