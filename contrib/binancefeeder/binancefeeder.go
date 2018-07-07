@@ -293,9 +293,21 @@ func (bn *BinanceFetcher) Run() {
 			csm.AddColumnSeries(*tbk, cs)
 			executor.WriteCSM(csm, false)
 		}
-
-		//Sleep for a second before next call
-		time.Sleep(time.Second)
+		
+		// next fetch start point
+		timeStart = lastTime.Add(gd.baseTimeframe.Duration)
+		// for the next bar to complete, add it once more
+		nextExpected := timeStart.Add(gd.baseTimeframe.Duration)
+		now := time.Now()
+		toSleep := nextExpected.Sub(now)
+		glog.Infof("next expected(%v) - now(%v) = %v", nextExpected, now, toSleep)
+		if toSleep > 0 {
+			glog.Infof("Sleep for %v", toSleep)
+			time.Sleep(toSleep)
+		} else if time.Now().Sub(lastTime) < time.Hour {
+			// let's not go too fast if the catch up is less than an hour
+			time.Sleep(time.Second)
+		}
 	}
 }
 
