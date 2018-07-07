@@ -230,7 +230,7 @@ func (bn *BinanceFetcher) Run() {
 
 		timeEnd := timeStart.Add(bn.baseTimeframe.Duration * 300)
 
-		if timeEnd > time.Now(){
+		if timeEnd.After(time.Now()){
 			timeEnd = time.Now().UTC()
 		}
 
