@@ -45,6 +45,7 @@ func ConvertMillToTime(originalTime int64) time.Time {
 	i := time.Unix(originalTime, 0 )
 	return i
 }
+
 // FetchConfig is the configuration for bitfinexFetcher you can define in
 // marketstore's config file through bgworker extension.
 type FetcherConfig struct {
