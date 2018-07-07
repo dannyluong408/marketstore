@@ -231,6 +231,7 @@ func (bn *BinanceFetcher) Run() {
 		timeEnd := timeStart.Add(bn.baseTimeframe.Duration * 300)
 
 		if timeEnd.After(time.Now()){
+			glog.Infof("Time end goes past now %v, setting it to now %v", timeEnd.UTC(), time.Now().UTC())
 			timeEnd = time.Now().UTC()
 		}
 
