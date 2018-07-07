@@ -230,24 +230,19 @@ func (bn *BinanceFetcher) Run() {
 
 		timeEnd := timeStart.Add(bn.baseTimeframe.Duration * 300)
 
-		if timeEnd.After(time.Now()){
-			glog.Infof("Time end goes past now %v, setting it to now %v", timeEnd.UTC(), time.Now().UTC())
-			timeEnd = time.Now().UTC()
-		}
-
-		diffTimes := finalTime.Sub(timeEnd)
-
-		//Reset time. Make sure you get all data possible
-		if diffTimes < 0{
-			timeStart = timeStart.Add(-bn.baseTimeframe.Duration * 300)
-			timeEnd = finalTime
-		}
-
-
-		if diffTimes == 0 {
-			glog.Infof("Got all data from: %v to %v", bn.queryStart, bn.queryEnd)
-			glog.Infof("Continuing...")
-		}
+		// diffTimes := finalTime.Sub(timeEnd)
+		//
+		// //Reset time. Make sure you get all data possible
+		// if diffTimes < 0{
+		// 	timeStart = timeStart.Add(-bn.baseTimeframe.Duration * 300)
+		// 	timeEnd = finalTime
+		// 	glog.Infof("D end goes past now %v, setting it to now %v", timeEnd.UTC(), time.Now().UTC())
+		// }
+		//
+		// if diffTimes == 0 {
+		// 	glog.Infof("Got all data from: %v to %v", bn.queryStart, bn.queryEnd)
+		// 	glog.Infof("Continuing...")
+		// }
 		lastTime := timeStart
 
 		var timeStartM int64
