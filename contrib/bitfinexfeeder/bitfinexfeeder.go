@@ -178,9 +178,9 @@ func (gd *BitfinexFetcher) Run() {
 	timeInterval := timeIntervalNumsOnly + correctIntervalSymbol
 
 	for _, symbol := range symbols {
-		tbk := io.NewTimeBucketKey(exchange + symbol + "/" + gd.baseTimeframe.String + "/OHLCV")
-		lastTimestamp := findLastTimestamp(exchange + symbol, tbk)
-		glog.Infof("lastTimestamp for %s = %v", symbol, lastTimestamp)
+		tbk := io.NewTimeBucketKey(exchange + bitfinex.TradingPrefix + symbol + "/" + gd.baseTimeframe.String + "/OHLCV")
+		lastTimestamp := findLastTimestamp(exchange + bitfinex.TradingPrefix + symbol, tbk)
+		glog.Infof("lastTimestamp for %s = %v", bitfinex.TradingPrefix + symbol, lastTimestamp)
 		if timeStart.IsZero() || (!lastTimestamp.IsZero() && lastTimestamp.Before(timeStart)) {
 			timeStart = lastTimestamp
 		}
@@ -207,8 +207,8 @@ func (gd *BitfinexFetcher) Run() {
 
 			//Granularity: int(gd.baseTimeframe.Duration.Seconds()),
 
-			glog.Infof("Requesting %s %v - %v", symbol, timeStart, timeEnd)
-			rates, err := client.Candles.GetOHLCV(timeInterval, symbol, timeStartM, timeEndM)
+			glog.Infof("Requesting %s %v - %v", bitfinex.TradingPrefix + symbol, timeStart, timeEnd)
+			rates, err := client.Candles.GetOHLCV(timeInterval, bitfinex.TradingPrefix + symbol, timeStartM, timeEndM)
 			if err != nil {
 				glog.Errorf("Response error: %v", err)
 				// including rate limit case
@@ -246,10 +246,10 @@ func (gd *BitfinexFetcher) Run() {
 			cs.AddColumn("Low", low)
 			cs.AddColumn("Close", close)
 			cs.AddColumn("Volume", volume)
-			glog.Infof("%s: %d rates between %v - %v", symbol, len(rates),
+			glog.Infof("%s: %d rates between %v - %v", bitfinex.TradingPrefix + symbol, len(rates),
 				ConvertMillToTime(rates[0].MTS), ConvertMillToTime(rates[(len(rates))-1].MTS))
 			csm := io.NewColumnSeriesMap()
-			tbk := io.NewTimeBucketKey(exchange + symbol + "/" + gd.baseTimeframe.String + "/OHLCV")
+			tbk := io.NewTimeBucketKey(exchange + bitfinex.TradingPrefix + symbol + "/" + gd.baseTimeframe.String + "/OHLCV")
 			csm.AddColumnSeries(*tbk, cs)
 			executor.WriteCSM(csm, false)
 		}
