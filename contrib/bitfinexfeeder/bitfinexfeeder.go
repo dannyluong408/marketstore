@@ -233,7 +233,7 @@ func (bf *BitfinexFetcher) Run() {
 				if ConvertMillToTime(rate.MTS).After(lastTime) {
 					lastTime = ConvertMillToTime(rate.MTS)
 				}
-				epoch = append(epoch, int64(rate.MTS))
+				epoch = append(epoch, ConvertMillToTime(rate.MTS).Unix())
 				open = append(open, float64(rate.Open))
 				high = append(high, float64(rate.High))
 				low = append(low, float64(rate.Low))
