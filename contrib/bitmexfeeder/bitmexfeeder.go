@@ -16,6 +16,8 @@ import (
 	"github.com/golang/glog"
 )
 
+const exchange string = "bitmex-"
+
 // FetcherConfig is the configuration for BitmexFetcher you can define in
 // marketstore's config file through bgworker extension.
 type FetcherConfig struct {
@@ -113,8 +115,8 @@ func (gd *BitmexFetcher) Run() {
 	symbols := gd.symbols
 	timeStart := time.Time{}
 	for _, symbol := range symbols {
-		tbk := io.NewTimeBucketKey(symbol + "/" + gd.baseTimeframe.String + "/OHLCV")
-		lastTimestamp := findLastTimestamp(symbol, tbk)
+		tbk := io.NewTimeBucketKey(exchange + symbol + "/" + gd.baseTimeframe.String + "/OHLCV")
+		lastTimestamp := findLastTimestamp(exchange + symbol, tbk)
 		glog.Infof("lastTimestamp for %s = %v", symbol, lastTimestamp)
 		if timeStart.IsZero() || (!lastTimestamp.IsZero() && lastTimestamp.Before(timeStart)) {
 			timeStart = lastTimestamp
@@ -173,7 +175,7 @@ func (gd *BitmexFetcher) Run() {
 			glog.Infof("%s: %d rates between %s - %s", symbol, len(rates),
 				rates[0].Timestamp, rates[(len(rates))-1].Timestamp)
 			csm := io.NewColumnSeriesMap()
-			tbk := io.NewTimeBucketKey(symbol + "/" + gd.baseTimeframe.String + "/OHLCV")
+			tbk := io.NewTimeBucketKey(exchange + symbol + "/" + gd.baseTimeframe.String + "/OHLCV")
 			csm.AddColumnSeries(*tbk, cs)
 			executor.WriteCSM(csm, false)
 		}
