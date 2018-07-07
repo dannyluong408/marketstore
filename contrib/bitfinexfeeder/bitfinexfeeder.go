@@ -206,8 +206,6 @@ func (bf *BitfinexFetcher) Run() {
 
 		for _, symbol := range symbols {
 
-			//Granularity: int(bf.baseTimeframe.Duration.Seconds()),
-
 			glog.Infof("Requesting %s %v - %v", bitfinex.TradingPrefix + symbol, timeStart, timeEnd)
 			rates, err := client.Candles.GetOHLCV(timeInterval, bitfinex.TradingPrefix + symbol, timeStartM, timeEndM)
 			if err != nil {
@@ -251,7 +249,6 @@ func (bf *BitfinexFetcher) Run() {
 				ConvertMillToTime(rates[0].MTS), ConvertMillToTime(rates[(len(rates))-1].MTS))
 			csm := io.NewColumnSeriesMap()
 			tbk := io.NewTimeBucketKey(exchange + bitfinex.TradingPrefix + symbol + "/" + bf.baseTimeframe.String + "/OHLCV")
-
 			csm.AddColumnSeries(*tbk, cs)
 			executor.WriteCSM(csm, false)
 		}
