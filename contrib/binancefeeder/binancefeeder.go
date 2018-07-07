@@ -251,7 +251,6 @@ func (bn *BinanceFetcher) Run() {
 
 		for _, symbol := range symbols {
 			glog.Infof("Requesting %s %v - %v", symbol, timeStart, timeEnd)
-			glog.Infof("Times: %v - %v", timeStartM, timeEndM)
 
 			rates, err := client.NewKlinesService().Symbol(symbol).Interval(timeInterval).StartTime(timeStartM).EndTime(timeEndM).Do(context.Background())
 
@@ -307,7 +306,6 @@ func (bn *BinanceFetcher) Run() {
 		}
 
 		// next fetch start point
-		glog.Infof("Time Start debug 1(%v)", timeStart)
 		timeStart = lastTime.Add(bn.baseTimeframe.Duration)
 		// for the next bar to complete, add it once more
 		nextExpected := timeStart.Add(bn.baseTimeframe.Duration)
