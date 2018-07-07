@@ -228,6 +228,7 @@ func (bf *BitfinexFetcher) Run() {
 			sort.Sort(ByTime(rates))
 
 			for _, rate := range rates {
+				glog.Info("MTS %v", ConvertMillToTime(rate.MTS))
 				if ConvertMillToTime(rate.MTS).After(lastTime) {
 					lastTime = ConvertMillToTime(rate.MTS)
 				}
