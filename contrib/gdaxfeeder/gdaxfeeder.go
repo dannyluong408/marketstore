@@ -153,15 +153,19 @@ func (gd *GdaxFetcher) Run() {
 	}
 	for {
 		timeEnd := timeStart.Add(gd.baseTimeframe.Duration * 300)
+
 		lastTime := timeStart
+
 		for _, symbol := range symbols {
 			params := gdax.GetHistoricRatesParams{
 				Start:       timeStart,
 				End:         timeEnd,
 				Granularity: int(gd.baseTimeframe.Duration.Seconds()),
 			}
+			
 			glog.Infof("Requesting %s %v - %v", symbol, timeStart, timeEnd)
 			rates, err := client.GetHistoricRates(symbol, params)
+
 			if err != nil {
 				glog.Errorf("Response error: %v", err)
 				// including rate limit case

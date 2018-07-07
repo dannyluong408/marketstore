@@ -98,8 +98,7 @@ func GetAllSymbols() []string {
 	validSymbols := make([]string, 0)
 
 	if err != nil {
-		symbols := []string{"BTC", "EOS", "ETH", "BNB", "TRX", "ONT", "XRP", "ADA",
-			"LTC", "BCC", "TUSD", "IOTA", "ETC", "ICX", "NEO", "XLM", "QTUM", "BCH"}
+		symbols := []string{"BTCUSDT", "ETHUSDT", "LTCUSDT", "ETHBTC"}
 		return symbols
 	} else {
 		for _, info := range exchangeinfo.Symbols {
@@ -231,18 +230,7 @@ func (bn *BinanceFetcher) Run() {
 
 		timeEnd := timeStart.Add(bn.baseTimeframe.Duration * 300)
 
-		diffTimes := finalTime.Sub(timeEnd)
-
-		//Reset time. Make sure you get all data possible
-		if diffTimes < 0{
-			timeStart = timeStart.Add(-bn.baseTimeframe.Duration * 300)
-			timeEnd = finalTime
-		}
-
-		if diffTimes == 0 {
-			glog.Infof("Got all data from: %v to %v", bn.queryStart, bn.queryEnd)
-			glog.Infof("Continuing...")
-		}
+		lastTime := timeStart
 
 		var timeStartM int64
 		var timeEndM int64
@@ -273,6 +261,9 @@ func (bn *BinanceFetcher) Run() {
 			volume := make([]float64, 0)
 
 			for _, rate := range rates {
+				if rate.OpenTime.After(lastTime) {
+					lastTime = rate.Time
+				}
 				errorsConversion = errorsConversion[:0]
 				openTime = append(openTime, ConvertMillToTime(rate.OpenTime).Unix())
 				open = append(open, ConvertStringToFloat(rate.Open))
