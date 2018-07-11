@@ -27,11 +27,13 @@ var suffixBinanceDefs = map[string]string{
 
 const exchange string = "binance-"
 
-//For ConvertStringToFloat function and Run() function to making exiting easier
+// For ConvertStringToFloat function and Run() function to making exiting easier
 var errorsConversion []error
 
+// FetcherConfig is a structure of binancefeeder's parameters
 type FetcherConfig struct {
 	Symbols       []string `json:"symbols"`
+	BaseCurrency  string   `json:"base_currency"`
 	QueryStart    string   `json:"query_start"`
 	QueryEnd      string   `json:"query_end"`
 	BaseTimeframe string   `json:"base_timeframe"`
@@ -41,11 +43,13 @@ type FetcherConfig struct {
 type BinanceFetcher struct {
 	config        map[string]interface{}
 	symbols       []string
+	baseCurrency  string
 	queryStart    time.Time
 	queryEnd      time.Time
 	baseTimeframe *utils.Timeframe
 }
 
+// recast changes parsed JSON-encoded data represented as an interface to FetcherConfig structure
 func recast(config map[string]interface{}) *FetcherConfig {
 	data, _ := json.Marshal(config)
 	ret := FetcherConfig{}
@@ -53,7 +57,8 @@ func recast(config map[string]interface{}) *FetcherConfig {
 	return &ret
 }
 
-func ConvertStringToFloat(str string) float64 {
+//Convert string to float64 using strconv
+func convertStringToFloat(str string) float64 {
 	convertedString, err := strconv.ParseFloat(str, 64)
 	//Store error in string array which will be checked in main fucntion later to see if there is a need to exit
 	if err != nil {
@@ -64,7 +69,7 @@ func ConvertStringToFloat(str string) float64 {
 }
 
 //Checks time string and returns correct time format
-func QueryTime(query string) time.Time {
+func queryTime(query string) time.Time {
 	trials := []string{
 		"2006-01-02 03:04:05",
 		"2006-01-02T03:04:05",
@@ -84,18 +89,30 @@ func QueryTime(query string) time.Time {
 }
 
 //Convert time from milliseconds to Unix
-func ConvertMillToTime(originalTime int64) time.Time {
+func convertMillToTime(originalTime int64) time.Time {
 	i := time.Unix(0, originalTime*int64(time.Millisecond))
 	return i
 }
 
+// Append if String is Missing from array
+// All credit to Sonia: https://stackoverflow.com/questions/9251234/go-append-if-unique
+func appendIfMissing(slice []string, i string) ([]string, bool) {
+	for _, ele := range slice {
+		if ele == i {
+			return slice, false
+		}
+	}
+	return append(slice, i), true
+}
+
 //Gets all symbols from binance
-func GetAllSymbols() []string {
+func getAllSymbols(quoteAsset string) []string {
 	client := binance.NewClient("", "")
 	exchangeinfo, err := client.NewExchangeInfoService().Do(context.Background())
 	symbol := make([]string, 0)
 	status := make([]string, 0)
 	validSymbols := make([]string, 0)
+	quote := ""
 
 	if err != nil {
 		symbols := []string{"BTCUSDT", "ETHUSDT", "LTCUSDT", "ETHBTC"}
@@ -139,38 +156,41 @@ func findLastTimestamp(symbol string, tbk *io.TimeBucketKey) time.Time {
 	return ts[0]
 }
 
-//Register new background worker
+// NewBgWorker registers a new background worker
 func NewBgWorker(conf map[string]interface{}) (bgworker.BgWorker, error) {
 	config := recast(conf)
 	var queryStart time.Time
 	var queryEnd time.Time
 	timeframeStr := "1Min"
 	var symbols []string
+	baseCurrency := "USDT"
+
+	if config.BaseTimeframe != "" {
+		timeframeStr = config.BaseTimeframe
+	}
+
+	if config.BaseCurrency != "" {
+		baseCurrency = config.BaseCurrency
+	}
+
+	if config.QueryStart != "" {
+		queryStart = queryTime(config.QueryStart)
+	}
+
+	if config.QueryEnd != "" {
+		queryEnd = queryTime(config.QueryEnd)
+	}
 
 	//First see if config has symbols, if not retrieve all from binance as default
 	if len(config.Symbols) > 0 {
 		symbols = config.Symbols
 	} else {
-		symbols = GetAllSymbols()
+		symbols = getAllSymbols(baseCurrency)
 	}
 
-	if config.BaseTimeframe != "" {
-		timeframeStr = config.BaseTimeframe
-	}
-
-	if config.QueryStart != "" {
-		queryStart = QueryTime(config.QueryStart)
-	}
-
-	if config.QueryEnd != "" {
-		queryEnd = QueryTime(config.QueryEnd)
-	}
-
-	if config.BaseTimeframe != "" {
-		timeframeStr = config.BaseTimeframe
-	}
 	return &BinanceFetcher{
 		config:        conf,
+		baseCurrency:  baseCurrency,
 		symbols:       symbols,
 		queryStart:    queryStart,
 		queryEnd:      queryEnd,
@@ -178,12 +198,16 @@ func NewBgWorker(conf map[string]interface{}) (bgworker.BgWorker, error) {
 	}, nil
 }
 
-//Grab data in hour intervals from starting time to ending time
+// Run grabs data in intervals from starting time to ending time.
+// If query_end is not set, it will run forever.
 func (bn *BinanceFetcher) Run() {
 	symbols := bn.symbols
 	client := binance.NewClient("", "")
 	timeStart := time.Time{}
 	finalTime := bn.queryEnd
+	baseCurrency := bn.baseCurrency
+	loopForever := false
+	slowDown := false
 
 	originalInterval := bn.baseTimeframe.String
 	re := regexp.MustCompile("[0-9]+")
@@ -200,9 +224,10 @@ func (bn *BinanceFetcher) Run() {
 		correctIntervalSymbol = "1Min"
 	}
 
-	//Time end issue
+	//Time end check
 	if finalTime.IsZero() {
 		finalTime = time.Now().UTC()
+		loopForever = true
 	}
 
 	//Replace interval string with correct one with API call
@@ -216,30 +241,38 @@ func (bn *BinanceFetcher) Run() {
 			timeStart = lastTimestamp
 		}
 	}
-	if timeStart.IsZero() {
-		if !bn.queryStart.IsZero() {
-			timeStart = bn.queryStart
-		} else {
-			timeStart = time.Now().UTC().Add(-time.Hour)
-		}
-	}
+
 	for {
+		if timeStart.IsZero() {
+			if !bn.queryStart.IsZero() {
+				timeStart = bn.queryStart
+			} else {
+				timeStart = time.Now().UTC().Add(-time.Hour)
+			}
+		} else {
+			timeStart = timeStart.Add(bn.baseTimeframe.Duration * 300)
+		}
+
 		timeEnd := timeStart.Add(bn.baseTimeframe.Duration * 300)
 
-		lastTime := timeStart
-		// diffTimes := finalTime.Sub(timeEnd)
-		//
-		// //Reset time. Make sure you get all data possible
-		// if diffTimes < 0{
-		// 	timeStart = timeStart.Add(-bn.baseTimeframe.Duration * 300)
-		// 	timeEnd = finalTime
-		// 	glog.Infof("D end goes past now %v, setting it to now %v", timeEnd.UTC(), time.Now().UTC())
-		// }
-		//
-		// if diffTimes == 0 {
-		// 	glog.Infof("Got all data from: %v to %v", bn.queryStart, bn.queryEnd)
-		// 	glog.Infof("Continuing...")
-		// }
+		diffTimes := finalTime.Sub(timeEnd)
+
+		// Reset time. Make sure you get all data possible
+		// Will continue forever
+		if diffTimes < 0 {
+			timeStart = timeStart.Add(-bn.baseTimeframe.Duration * 300)
+			if loopForever {
+				finalTime = time.Now().UTC()
+			} else {
+				timeEnd = finalTime
+			}
+			slowDown = true
+		}
+
+		if diffTimes == 0 {
+			glog.Infof("Got all data from: %v to %v", bn.queryStart, bn.queryEnd)
+			glog.Infof("Continuing...")
+		}
 
 		var timeStartM int64
 		var timeEndM int64
@@ -255,6 +288,8 @@ func (bn *BinanceFetcher) Run() {
 			if err != nil {
 				glog.Errorf("Response error: %v", err)
 				time.Sleep(time.Minute)
+				// Go back to last time
+				timeStart = timeEnd.Add(-bn.baseTimeframe.Duration * 300)
 				continue
 			}
 			if len(rates) == 0 {
@@ -270,16 +305,13 @@ func (bn *BinanceFetcher) Run() {
 			volume := make([]float64, 0)
 
 			for _, rate := range rates {
-				if ConvertMillToTime(rate.OpenTime).After(lastTime) {
-					lastTime = ConvertMillToTime(rate.OpenTime)
-				}
 				errorsConversion = errorsConversion[:0]
-				openTime = append(openTime, ConvertMillToTime(rate.OpenTime).Unix())
-				open = append(open, ConvertStringToFloat(rate.Open))
-				high = append(high, ConvertStringToFloat(rate.High))
-				low = append(low, ConvertStringToFloat(rate.Low))
-				close = append(close, ConvertStringToFloat(rate.Close))
-				volume = append(volume, ConvertStringToFloat(rate.Volume))
+				openTime = append(openTime, convertMillToTime(rate.OpenTime).Unix())
+				open = append(open, convertStringToFloat(rate.Open))
+				high = append(high, convertStringToFloat(rate.High))
+				low = append(low, convertStringToFloat(rate.Low))
+				close = append(close, convertStringToFloat(rate.Close))
+				volume = append(volume, convertStringToFloat(rate.Volume))
 
 				for _, e := range errorsConversion {
 					if e != nil {
@@ -303,20 +335,13 @@ func (bn *BinanceFetcher) Run() {
 			executor.WriteCSM(csm, false)
 		}
 
-		// next fetch start point
-		timeStart = lastTime.Add(bn.baseTimeframe.Duration)
-		// for the next bar to complete, add it once more
-		nextExpected := timeStart.Add(bn.baseTimeframe.Duration)
-		now := time.Now()
-		toSleep := nextExpected.Sub(now)
-		glog.Infof("next expected(%v) - now(%v) = %v", nextExpected, now, toSleep)
-		if toSleep > 0 {
-			glog.Infof("Sleep for %v", toSleep)
-			time.Sleep(toSleep)
-		} else if time.Now().Sub(lastTime) < time.Hour {
-			// let's not go too fast if the catch up is less than an hour
+		//Sleep for a second before next call
+		if slowDown {
+			time.Sleep(30 * time.Second)
+		} else {
 			time.Sleep(time.Second)
 		}
+
 	}
 }
 
