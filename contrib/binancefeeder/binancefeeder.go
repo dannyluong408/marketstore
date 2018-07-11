@@ -33,7 +33,6 @@ var errorsConversion []error
 // FetcherConfig is a structure of binancefeeder's parameters
 type FetcherConfig struct {
 	Symbols       []string `json:"symbols"`
-	BaseCurrency  string   `json:"base_currency"`
 	QueryStart    string   `json:"query_start"`
 	QueryEnd      string   `json:"query_end"`
 	BaseTimeframe string   `json:"base_timeframe"`
@@ -43,7 +42,6 @@ type FetcherConfig struct {
 type BinanceFetcher struct {
 	config        map[string]interface{}
 	symbols       []string
-	baseCurrency  string
 	queryStart    time.Time
 	queryEnd      time.Time
 	baseTimeframe *utils.Timeframe
@@ -106,13 +104,12 @@ func appendIfMissing(slice []string, i string) ([]string, bool) {
 }
 
 //Gets all symbols from binance
-func getAllSymbols(quoteAsset string) []string {
+func getAllSymbols() []string {
 	client := binance.NewClient("", "")
 	exchangeinfo, err := client.NewExchangeInfoService().Do(context.Background())
 	symbol := make([]string, 0)
 	status := make([]string, 0)
 	validSymbols := make([]string, 0)
-	quote := ""
 
 	if err != nil {
 		symbols := []string{"BTCUSDT", "ETHUSDT", "LTCUSDT", "ETHBTC"}
@@ -163,14 +160,9 @@ func NewBgWorker(conf map[string]interface{}) (bgworker.BgWorker, error) {
 	var queryEnd time.Time
 	timeframeStr := "1Min"
 	var symbols []string
-	baseCurrency := "USDT"
 
 	if config.BaseTimeframe != "" {
 		timeframeStr = config.BaseTimeframe
-	}
-
-	if config.BaseCurrency != "" {
-		baseCurrency = config.BaseCurrency
 	}
 
 	if config.QueryStart != "" {
@@ -185,12 +177,11 @@ func NewBgWorker(conf map[string]interface{}) (bgworker.BgWorker, error) {
 	if len(config.Symbols) > 0 {
 		symbols = config.Symbols
 	} else {
-		symbols = getAllSymbols(baseCurrency)
+		symbols = getAllSymbols()
 	}
 
 	return &BinanceFetcher{
 		config:        conf,
-		baseCurrency:  baseCurrency,
 		symbols:       symbols,
 		queryStart:    queryStart,
 		queryEnd:      queryEnd,
@@ -205,7 +196,6 @@ func (bn *BinanceFetcher) Run() {
 	client := binance.NewClient("", "")
 	timeStart := time.Time{}
 	finalTime := bn.queryEnd
-	baseCurrency := bn.baseCurrency
 	loopForever := false
 	slowDown := false
 
