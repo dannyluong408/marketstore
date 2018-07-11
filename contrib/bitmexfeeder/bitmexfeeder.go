@@ -29,7 +29,7 @@ type FetcherConfig struct {
 	QueryStart string `json:"query_start"`
 	// such as 5m, 1h, 1D.  defaults to 1m
 	BaseTimeframe string `json:"base_timeframe"`
-}
+}+
 
 // BitmexFetcher is the main worker instance.  It implements bgworker.Run().
 type BitmexFetcher struct {
@@ -115,8 +115,8 @@ func (gd *BitmexFetcher) Run() {
 	symbols := gd.symbols
 	timeStart := time.Time{}
 	for _, symbol := range symbols {
-		tbk := io.NewTimeBucketKey(exchange + symbol + "/" + gd.baseTimeframe.String + "/OHLCV")
-		lastTimestamp := findLastTimestamp(exchange + symbol, tbk)
+		tbk := io.NewTimeBucketKey(exchange + symbol[1:] + "/" + gd.baseTimeframe.String + "/OHLCV")
+		lastTimestamp := findLastTimestamp(exchange + symbol[1:], tbk)
 		glog.Infof("lastTimestamp for %s = %v", symbol, lastTimestamp)
 		if timeStart.IsZero() || (!lastTimestamp.IsZero() && lastTimestamp.Before(timeStart)) {
 			timeStart = lastTimestamp
@@ -175,7 +175,7 @@ func (gd *BitmexFetcher) Run() {
 			glog.Infof("%s: %d rates between %s - %s", symbol, len(rates),
 				rates[0].Timestamp, rates[(len(rates))-1].Timestamp)
 			csm := io.NewColumnSeriesMap()
-			tbk := io.NewTimeBucketKey(exchange + symbol + "/" + gd.baseTimeframe.String + "/OHLCV")
+			tbk := io.NewTimeBucketKey(exchange + symbol[1:] + "/" + gd.baseTimeframe.String + "/OHLCV")
 			csm.AddColumnSeries(*tbk, cs)
 			executor.WriteCSM(csm, false)
 		}
