@@ -29,7 +29,7 @@ type FetcherConfig struct {
 	QueryStart string `json:"query_start"`
 	// such as 5m, 1h, 1D.  defaults to 1m
 	BaseTimeframe string `json:"base_timeframe"`
-}+
+}
 
 // BitmexFetcher is the main worker instance.  It implements bgworker.Run().
 type BitmexFetcher struct {
