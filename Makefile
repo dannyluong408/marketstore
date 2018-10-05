@@ -1,7 +1,7 @@
 .PHONY: plugins
 
 GOPATH0 := $(firstword $(subst :, ,$(GOPATH)))
-UTIL_PATH := github.com/alpacahq/marketstore/utils
+UTIL_PATH := github.com/dannyluong408/marketstore/utils
 
 all:
 	go install -ldflags "-s -X $(UTIL_PATH).Tag=$(DOCKER_TAG) -X $(UTIL_PATH).BuildStamp=$(shell date -u +%Y-%m-%d-%H-%M-%S) -X $(UTIL_PATH).GitHash=$(shell git rev-parse HEAD)" ./...
@@ -26,6 +26,7 @@ plugins:
 	$(MAKE) -C contrib/polygon
 	$(MAKE) -C contrib/bitmexfeeder
 	$(MAKE) -C contrib/binancefeeder
+	$(MAKE) -C contrib/bitfinexfeeder
 
 unittest:
 	go fmt ./...
