@@ -1,20 +1,40 @@
-FROM golang:1.10.3-alpine
+# -*- mode: dockerfile -*-
+#
+# A multi-stage Dockerfile that builds a Linux target then creates a small
+# final image for deployment.
 
-ARG tag
-
+#
+# STAGE 1
+#
+# Uses a Go image to build a release binary.
+#
+FROM golang:1.11-alpine AS builder
+ARG tag=latest
 ENV DOCKER_TAG=$tag
+ENV GO111MODULE=on
 
-RUN apk update
-RUN apk --no-cache add git make tar bash curl alpine-sdk su-exec
-#RUN  go get -u github.com/golang/dep/... && mv /go/bin/dep /usr/local/bin/dep
-RUN curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh && mv /go/bin/dep /usr/local/bin/dep
-ADD . /go/src/github.com/dannyluong408/marketstore
-WORKDIR /go/src/github.com/dannyluong408/marketstore
+RUN apk --no-cache add git make gcc g++
+WORKDIR /go/src/github.com/dannyluong408/marketstore/
+ADD ./ ./
+RUN make vendor
+RUN make install plugins
 
-RUN make configure all plugins
+#
+# STAGE 2
+#
+# Use a tiny base image (alpine) and copy in the release target. This produces
+# a very small output image for deployment.
+#
+FROM alpine:latest
+RUN apk --no-cache add ca-certificates tzdata
+WORKDIR /
+COPY --from=builder /go/bin/marketstore /bin/
+COPY --from=builder /go/bin/*.so /bin/
 
-COPY entrypoint.sh /bin/
-RUN chmod +x /bin/entrypoint.sh
-ENTRYPOINT ["/bin/entrypoint.sh"]
+RUN ["marketstore", "init"]
+RUN mv mkts.yml /etc/
+VOLUME /data
+EXPOSE 5993
 
-CMD marketstore
+ENTRYPOINT ["marketstore"]
+CMD ["start", "--config", "/etc/mkts.yml"]
