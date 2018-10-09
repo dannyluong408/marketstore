@@ -16,7 +16,7 @@ import (
 	"github.com/alpacahq/marketstore/utils"
 	"github.com/alpacahq/marketstore/utils/io"
 	"github.com/golang/glog"
-	bitfinexv1 "github.com/bitfinexcom/bitfinex-api-go/v1"
+	bitfinexv1 "github.com/dannyluong408/bitfinex-api-go/v1"
 	bitfinex "github.com/dannyluong408/bitfinex-api-go/v2"
 	"github.com/dannyluong408/bitfinex-api-go/v2/rest"
 )
