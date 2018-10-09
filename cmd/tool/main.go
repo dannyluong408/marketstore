@@ -1,8 +1,8 @@
 package tool
 
 import (
-	"github.com/alpacahq/marketstore/cmd/tool/integrity"
-	"github.com/alpacahq/marketstore/cmd/tool/wal"
+	"github.com/dannyluong408/marketstore/cmd/tool/integrity"
+	"github.com/dannyluong408/marketstore/cmd/tool/wal"
 	"github.com/spf13/cobra"
 )
 

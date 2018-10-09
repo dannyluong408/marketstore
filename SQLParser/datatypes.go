@@ -1,6 +1,6 @@
 package SQLParser
 
-import "github.com/alpacahq/marketstore/utils/io"
+import "github.com/dannyluong408/marketstore/utils/io"
 
 //go:generate ./buildVisitorCode.sh visitorcodegenerated.go
 //go:generate stringer -type=StatementTypeEnum,PrimaryExpressionEnum

@@ -3,8 +3,8 @@ package connect
 import (
 	"errors"
 
-	"github.com/alpacahq/marketstore/cmd/connect/session"
-	. "github.com/alpacahq/marketstore/utils/log"
+	"github.com/dannyluong408/marketstore/cmd/connect/session"
+	. "github.com/dannyluong408/marketstore/utils/log"
 	"github.com/spf13/cobra"
 )
 

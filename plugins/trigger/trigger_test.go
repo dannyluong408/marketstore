@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/alpacahq/marketstore/utils"
-	"github.com/alpacahq/marketstore/utils/io"
+	"github.com/dannyluong408/marketstore/utils"
+	"github.com/dannyluong408/marketstore/utils/io"
 	. "gopkg.in/check.v1"
 )
 

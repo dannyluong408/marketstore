@@ -1,7 +1,7 @@
 package aggtrigger
 
 import (
-	"github.com/alpacahq/marketstore/utils"
+	"github.com/dannyluong408/marketstore/utils"
 )
 
 type timeframes []utils.Timeframe
