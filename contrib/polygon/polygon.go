@@ -8,12 +8,12 @@ import (
 	"sync"
 	"time"
 
+	"github.com/buger/jsonparser"
 	"github.com/dannyluong408/marketstore/contrib/polygon/api"
 	"github.com/dannyluong408/marketstore/executor"
 	"github.com/dannyluong408/marketstore/planner"
 	"github.com/dannyluong408/marketstore/plugins/bgworker"
 	"github.com/dannyluong408/marketstore/utils/io"
-	"github.com/buger/jsonparser"
 	"github.com/golang/glog"
 	nats "github.com/nats-io/go-nats"
 )

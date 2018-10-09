@@ -3,8 +3,8 @@ package SQLParser
 import (
 	"fmt"
 
-	. "github.com/dannyluong408/marketstore/SQLParser/parser"
 	. "github.com/antlr/antlr4/runtime/Go/antlr"
+	. "github.com/dannyluong408/marketstore/SQLParser/parser"
 )
 
 type AstBuilder struct {

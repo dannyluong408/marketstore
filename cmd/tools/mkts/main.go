@@ -17,6 +17,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/chzyer/readline"
 	"github.com/dannyluong408/marketstore/SQLParser"
 	"github.com/dannyluong408/marketstore/cmd/tools/mkts/csvreader"
 	"github.com/dannyluong408/marketstore/executor"
@@ -26,7 +27,6 @@ import (
 	"github.com/dannyluong408/marketstore/utils"
 	. "github.com/dannyluong408/marketstore/utils/io"
 	. "github.com/dannyluong408/marketstore/utils/log"
-	"github.com/chzyer/readline"
 )
 
 var _ConnectURL = flag.String("serverURL", "", "network connect to server at \"hostname:port\"")

@@ -15,4 +15,3 @@ func (i StatementTypeEnum) String() string {
 	}
 	return _StatementTypeEnum_name[_StatementTypeEnum_index[i]:_StatementTypeEnum_index[i+1]]
 }
-

@@ -7,9 +7,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/antlr/antlr4/runtime/Go/antlr"
 	"github.com/dannyluong408/marketstore/SQLParser/parser"
 	"github.com/dannyluong408/marketstore/utils/io"
-	"github.com/antlr/antlr4/runtime/Go/antlr"
 )
 
 type StatementsParse struct {

@@ -116,7 +116,7 @@ func (gd *BitmexFetcher) Run() {
 	timeStart := time.Time{}
 	for _, symbol := range symbols {
 		tbk := io.NewTimeBucketKey(exchange + symbol[1:] + "/" + gd.baseTimeframe.String + "/OHLCV")
-		lastTimestamp := findLastTimestamp(exchange + symbol[1:], tbk)
+		lastTimestamp := findLastTimestamp(exchange+symbol[1:], tbk)
 		glog.Infof("lastTimestamp for %s = %v", symbol, lastTimestamp)
 		if timeStart.IsZero() || (!lastTimestamp.IsZero() && lastTimestamp.Before(timeStart)) {
 			timeStart = lastTimestamp

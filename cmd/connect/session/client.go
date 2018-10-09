@@ -18,12 +18,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/chzyer/readline"
 	"github.com/dannyluong408/marketstore/SQLParser"
 	"github.com/dannyluong408/marketstore/executor"
 	"github.com/dannyluong408/marketstore/frontend/client"
 	"github.com/dannyluong408/marketstore/utils"
 	dbio "github.com/dannyluong408/marketstore/utils/io"
-	"github.com/chzyer/readline"
 )
 
 // mode is the client connection mode.
