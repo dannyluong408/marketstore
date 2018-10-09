@@ -15,7 +15,7 @@ package main
 import (
 	"os"
 
-	"github.com/alpacahq/marketstore/cmd"
+	"github.com/dannyluong408/marketstore/cmd"
 )
 
 // Builds the command hierarchy and parses statements.

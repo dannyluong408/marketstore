@@ -18,12 +18,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/alpacahq/marketstore/SQLParser"
-	"github.com/alpacahq/marketstore/executor"
-	"github.com/alpacahq/marketstore/frontend/client"
-	"github.com/alpacahq/marketstore/utils"
-	dbio "github.com/alpacahq/marketstore/utils/io"
 	"github.com/chzyer/readline"
+	"github.com/dannyluong408/marketstore/SQLParser"
+	"github.com/dannyluong408/marketstore/executor"
+	"github.com/dannyluong408/marketstore/frontend/client"
+	"github.com/dannyluong408/marketstore/utils"
+	dbio "github.com/dannyluong408/marketstore/utils/io"
 )
 
 // mode is the client connection mode.

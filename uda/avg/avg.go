@@ -2,9 +2,9 @@ package avg
 
 import (
 	"fmt"
-	"github.com/alpacahq/marketstore/uda"
-	"github.com/alpacahq/marketstore/utils/functions"
-	"github.com/alpacahq/marketstore/utils/io"
+	"github.com/dannyluong408/marketstore/uda"
+	"github.com/dannyluong408/marketstore/utils/functions"
+	"github.com/dannyluong408/marketstore/utils/io"
 	"time"
 )
 

@@ -10,12 +10,12 @@ import (
 
 	"strings"
 
-	"github.com/alpacahq/marketstore/SQLParser"
-	"github.com/alpacahq/marketstore/executor"
-	"github.com/alpacahq/marketstore/planner"
-	"github.com/alpacahq/marketstore/utils"
-	"github.com/alpacahq/marketstore/utils/io"
-	"github.com/alpacahq/marketstore/utils/log"
+	"github.com/dannyluong408/marketstore/SQLParser"
+	"github.com/dannyluong408/marketstore/executor"
+	"github.com/dannyluong408/marketstore/planner"
+	"github.com/dannyluong408/marketstore/utils"
+	"github.com/dannyluong408/marketstore/utils/io"
+	"github.com/dannyluong408/marketstore/utils/log"
 )
 
 // This is the parameter interface for DataService.Query method.

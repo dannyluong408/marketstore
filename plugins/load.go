@@ -7,7 +7,7 @@ import (
 	"plugin"
 	"strings"
 
-	"github.com/alpacahq/marketstore/utils/log"
+	"github.com/dannyluong408/marketstore/utils/log"
 )
 
 type SymbolLoader struct {

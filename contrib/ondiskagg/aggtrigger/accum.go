@@ -3,7 +3,7 @@ package aggtrigger
 import (
 	"github.com/golang/glog"
 
-	"github.com/alpacahq/marketstore/utils/io"
+	"github.com/dannyluong408/marketstore/utils/io"
 )
 
 func firstFloat32(values []float32) float32 {

@@ -7,7 +7,7 @@ import (
 
 	"github.com/golang/glog"
 
-	"github.com/alpacahq/marketstore/plugins/trigger"
+	"github.com/dannyluong408/marketstore/plugins/trigger"
 )
 
 var (

@@ -5,9 +5,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/alpacahq/marketstore/executor"
-	"github.com/alpacahq/marketstore/utils/io"
-	. "github.com/alpacahq/marketstore/utils/log"
+	"github.com/dannyluong408/marketstore/executor"
+	"github.com/dannyluong408/marketstore/utils/io"
+	. "github.com/dannyluong408/marketstore/utils/log"
 )
 
 // trim removes the data in the date range from the db.
